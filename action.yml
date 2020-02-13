@@ -1,6 +1,11 @@
 name: 'Pull Request Updater GitHub Action'
 description: 'GitHub Action that updates a pull request with package version information'
 author: 'Brice Molesti'
+inputs:
+  isTitleShouldContainPackageVersionIncrementation:  # id of input
+    description: 'Specify if title should contain the package version incrementation or not'
+    required: true
+    default: true
 runs:
   using: 'node12'
   main: 'index.js'
