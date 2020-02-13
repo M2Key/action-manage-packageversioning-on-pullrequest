@@ -1,5 +1,6 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'Pull Request Updater GitHub Action'
+description: 'GitHub Action that updates a pull request with package version information'
+author: 'Brice Molesti'
 inputs:
   who-to-greet:  # id of input
     description: 'Who to greet'
@@ -11,3 +12,6 @@ outputs:
 runs:
   using: 'node12'
   main: 'index.js'
+branding:
+  icon: 'edit-3'
+  color: 'green'
