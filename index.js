@@ -94,8 +94,8 @@ async function run() {
 
             core.debug(`new title: ${request.title}`);
 
-            octokit.pulls.update(request).then(response => {
-                core.debug(`update pull request response: ${response}`);
+            octokit.pulls.update(request).then(({ data }) => {
+                core.debug(`update pull request response: ${data}`);
             }).catch(err => {
                 core.setFailed(err);
             });
@@ -125,4 +125,6 @@ function incrementVersion(version, incrementation) {
     return versionSplit.join('.');
 }
 
-run();
+run().then().catch(err => {
+    core.setFailed(err);
+});
