@@ -18,6 +18,19 @@ async function run() {
             core.setFailed('Pull request title should not include one of this : [+semver: breaking|major, +semver: feature|minor, +semver: fix|patch, +semver: none|skip] if the library was not updated');
             return;
         }
+
+        const myToken =  core.getInput('githubToken');
+        const octokit = new github.GitHub(myToken);
+ 
+        repo = github.context.repo;
+        octokit.pullRequest
+        const { data: pullRequest[] } = await octokit.pulls.list({
+            owner: 'M2Key',
+            repo: repo,
+            base: 'preprod'
+        });
+        core.debug(`data: ${data}`);
+        console.log(' data : ', data);
     }
     catch (error) {
         core.error(error);
