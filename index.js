@@ -36,7 +36,7 @@ async function run() {
         }).then(({ data }) => {
             return data;
         }).catch(err => {
-            reject(err);
+            core.setFailed(err);
         });
         return data;
     };
@@ -97,10 +97,10 @@ async function run() {
         octokit.pulls.update(request).then(response => {
             core.debug(`update pull request response: ${response}`);
         }).catch(err => {
-            reject(err);
+            core.setFailed(err);
         });
     }).catch(err => {
-        reject(err);
+        core.setFailed(err);
     });
 
 
