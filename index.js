@@ -78,25 +78,31 @@ async function run() {
                 console.log(` no increment version (${version})`);
             }
         });
-    })();
 
-    // add version to pull request title
-    const request = {
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        pull_number: github.context.payload.pull_request.number
-    };
+        return version;
+    })().then(version => {
+        console.log(' version final : ', version);
+        // add version to pull request title
+        const request = {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            pull_number: github.context.payload.pull_request.number
+        };
 
-    const updateTitle = title + ` #version:${version}`;
-    request.title = updateTitle;
-    request.body = '';
-    core.debug(`new title: ${request.title}`);
+        const updateTitle = title + ` #version:${version}`;
+        request.title = updateTitle;
+        request.body = '';
+        core.debug(`new title: ${request.title}`);
 
-    octokit.pulls.update(request).then(response => {
-        core.debug(`update pull request response: ${response}`);
+        octokit.pulls.update(request).then(response => {
+            core.debug(`update pull request response: ${response}`);
+        }).catch(err => {
+            reject(err);
+        });
     }).catch(err => {
         reject(err);
     });
+
 
 }
 
