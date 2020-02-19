@@ -23,14 +23,18 @@ async function run() {
         const octokit = new github.GitHub(myToken);
  
         repo = github.context.repo;
+        try {
+            const data = await octokit.pulls.list({
+                owner: 'M2Key',
+                repo: repo,
+                base: 'preprod'
+            });
+            core.debug(`data: ${data}`);
+            console.log(' data : ', data);
+        } catch (err) {
+            core.Debug(`err: ${err}`);
+        }
 
-        const { data: pullRequests } = await octokit.pulls.list({
-            owner: 'M2Key',
-            repo: repo,
-            base: 'preprod'
-        });
-        core.debug(`data: ${data}`);
-        console.log(' data : ', data);
     }
     catch (error) {
         core.error(error);
