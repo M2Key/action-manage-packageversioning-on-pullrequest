@@ -36,7 +36,7 @@ const github = require('@actions/github');
             }).then(({ data }) => {
                 return data;
             }).catch(err => {
-                core.setFailed(err);
+                core.setFailed(err.toString());
             });
             return data;
         };
@@ -97,10 +97,10 @@ const github = require('@actions/github');
             //octokit.pulls.update(request).then(({ data }) => {
             //    core.debug(`update pull request response: ${data}`);
             //}).catch(err => {
-            //    core.setFailed(err);
+            //    core.setFailed(err.toString());
             //});
         }).catch(err => {
-            core.setFailed(err);
+            core.setFailed(err.toString());
         });
 
 }
@@ -127,5 +127,5 @@ function incrementVersion(version, incrementation) {
 try {
     run();
 } catch (err) {
-    core.setFailed(err);
+    core.setFailed(err.toString());
 }
