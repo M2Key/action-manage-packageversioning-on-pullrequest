@@ -94,11 +94,11 @@ async function run() {
 
             core.debug(`new title: ${request.title}`);
 
-            octokit.pulls.update(request).then(({ data }) => {
-                core.debug(`update pull request response: ${data}`);
-            }).catch(err => {
-                core.setFailed(err);
-            });
+            //octokit.pulls.update(request).then(({ data }) => {
+            //    core.debug(`update pull request response: ${data}`);
+            //}).catch(err => {
+            //    core.setFailed(err);
+            //});
         }).catch(err => {
             core.setFailed(err);
         });
