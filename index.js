@@ -22,13 +22,11 @@ function run() {
     const octokit = new github.GitHub(myToken);
 
 
-    const repo = github.context.repo;
+    const repo = github.context.repo.repo;
     const owner = github.context.repo.owner;
     core.warning(`repo: ${repo}`);
     core.warning(`owner: ${owner}`);
     const getDatas = async function (page = 1) {
-        core.warning(`repo async: ${repo}`);
-        core.warning(`owner async: ${owner}`);
         let data = await octokit.pulls.list({
             owner: owner,
             repo: repo,
@@ -97,11 +95,11 @@ function run() {
 
         core.debug(`new title: ${request.title}`);
 
-        //octokit.pulls.update(request).then(({ data }) => {
-        //    core.debug(`update pull request response: ${data}`);
-        //}).catch(err => {
-        //    core.setFailed(err.toString());
-        //});
+        octokit.pulls.update(request).then(({ data }) => {
+            core.debug(`update pull request response: ${data}`);
+        }).catch(err => {
+            core.setFailed(err.toString());
+        });
     }).catch(err => {
         core.setFailed(err.toString());
     });
