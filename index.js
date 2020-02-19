@@ -2,8 +2,6 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 async function run() {
-    try {
-
 
         isTitleShouldContainPackageVersionIncrementation = core.getInput('isTitleShouldContainPackageVersionIncrementation', { required: true });
         const title = github.context.payload.pull_request.title;
@@ -37,6 +35,8 @@ async function run() {
                 state: 'all'
             }).then(({ data }) => {
                 return data;
+            }).catch(err => {
+                core.setFailed(err);
             });
             return data;
         };
@@ -57,7 +57,7 @@ async function run() {
             const entireList = await getEntirePullList();
             console.log('entireList lenght : ', entireList.length);
             const mergedPullRequestTitles = entireList.filter(pull => pull.state === 'closed' && pull.merged_at !== null).map(pull => pull.title);
-            let version = baseVersion;
+            let version = '1.0.0';
             console.log(' version : ', version);
             mergedPullRequestTitles.reverse().forEach(pullTitle => {
 
@@ -96,11 +96,12 @@ async function run() {
 
             octokit.pulls.update(request).then(response => {
                 core.debug(`update pull request response: ${response}`);
+            }).catch(err => {
+                core.setFailed(err);
             });
+        }).catch(err => {
+            core.setFailed(err);
         });
-    } catch (err) {
-        core.setFailed(err);
-    }
 
 }
 
