@@ -99,8 +99,6 @@ async function run() {
         }).catch(err => {
             core.setFailed(err);
         });
-    }).catch(err => {
-        core.setFailed(err);
     });
 
 
