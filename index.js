@@ -86,7 +86,7 @@ function run() {
         // add version to pull request title
         const request = {
             owner: owner,
-            repo: repos,
+            repo: repo,
             pull_number: github.context.payload.pull_request.number
         };
 
