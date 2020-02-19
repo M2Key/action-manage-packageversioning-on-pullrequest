@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-async function run() {
+ function run() {
 
         isTitleShouldContainPackageVersionIncrementation = core.getInput('isTitleShouldContainPackageVersionIncrementation', { required: true });
         const title = github.context.payload.pull_request.title;
@@ -124,11 +124,8 @@ function incrementVersion(version, incrementation) {
 
     return versionSplit.join('.');
 }
-
 try {
-    run().then().catch(err => {
-        core.setFailed(err);
-    });
+    run();
 } catch (err) {
     core.setFailed(err);
 }
