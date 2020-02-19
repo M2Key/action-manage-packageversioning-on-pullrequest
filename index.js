@@ -23,8 +23,8 @@ async function run() {
         const octokit = new github.GitHub(myToken);
  
         repo = github.context.repo;
-        octokit.pullRequest
-        const { data: pullRequest[] } = await octokit.pulls.list({
+
+        const { data: pullRequests } = await octokit.pulls.list({
             owner: 'M2Key',
             repo: repo,
             base: 'preprod'
