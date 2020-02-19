@@ -126,5 +126,5 @@ function incrementVersion(version, incrementation) {
 }
 
 run().then().catch(err => {
-    core.setFailed(err);
+
 });
