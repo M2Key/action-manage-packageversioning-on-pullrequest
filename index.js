@@ -125,6 +125,10 @@ function incrementVersion(version, incrementation) {
     return versionSplit.join('.');
 }
 
-run().then().catch(err => {
-
-});
+try {
+    run().then().catch(err => {
+        core.setFailed(err);
+    });
+} catch (err) {
+    core.setFailed(err);
+}
