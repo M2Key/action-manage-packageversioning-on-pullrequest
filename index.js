@@ -91,7 +91,7 @@ async function run() {
 
         const updateTitle = title + ` #version:${version}`;
         request.title = updateTitle;
-        request.body = '';
+
         core.debug(`new title: ${request.title}`);
 
         octokit.pulls.update(request).then(response => {
