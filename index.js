@@ -28,8 +28,6 @@ function run() {
 
     const getEntireFilesChangesList = async function (pageNo = 1) {
         const results = await getFilesChanges(pageNo);
-        console.log("Retreiving data from API for page : " + pageNo);
-        console.log("results lenght" + results.length);
         if (results.length === 50) {
             return results.concat(await getEntireFilesChangesList(pageNo + 1));
         } else {
@@ -57,8 +55,6 @@ function run() {
 
     const getEntirePullList = async function (pageNo = 1) {
         const results = await getDatas(pageNo);
-        console.log("Retreiving data from API for page : " + pageNo);
-        console.log("results lenght" + results.length);
         if (results.length === 50) {
             return results.concat(await getEntirePullList(pageNo + 1));
         } else {
@@ -71,15 +67,12 @@ function run() {
     (async () => {
 
         const entireFilesChangesList = await getEntireFilesChangesList();
-        console.log('entireFilesChangesList lenght : ', entireFilesChangesList.length);
-        console.log('entireFilesChangesList : ', entireFilesChangesList);
 
         let isLibraryUpdated = false;
         entireFilesChangesList.map(fileChange => fileChange.filename).forEach(filename => {
             console.log('test filename : ', filename, ' contain ', libraryPath);
             if (filename.startsWith(`${libraryPath}/`)) {
                 isLibraryUpdated = true;
-                console.log('library updated');
             }
 
         });
@@ -111,6 +104,7 @@ function run() {
                     console.log(' pullTitle : ', pullTitle);
                     version = determineVersionIncrementation(pullTitle, version);
                 });
+                console.log(' pullTitle to merge : ', title);
                 version = determineVersionIncrementation(title, version);
                 return version;
             })().then(version => {
@@ -136,7 +130,7 @@ function run() {
                 request.title = updateTitle;
                 request.body = '';
 
-                core.debug(`new title: ${request.title}`);
+                console.log(`new title: ${request.title}`);
 
                 octokit.pulls.update(request).then(({ data }) => {
                     core.debug(`update pull request response: ${data}`);

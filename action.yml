@@ -2,10 +2,12 @@ name: 'Pull Request Updater GitHub Action'
 description: 'GitHub Action that updates a pull request with package version information'
 author: 'Brice Molesti'
 inputs:
-  isTitleShouldContainPackageVersionIncrementation:  # id of input
-    description: 'Specify if title should contain the package version incrementation or not'
+  libraryPath:  # id of input
+    description: 'Specify the library path that determine if library was updated'
     required: true
-    default: true
+  githubToken:  # id of input
+    description: 'The github token to use with octokit api rest'
+    required: true
 runs:
   using: 'node12'
   main: 'index.js'
