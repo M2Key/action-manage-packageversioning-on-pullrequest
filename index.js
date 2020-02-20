@@ -15,7 +15,7 @@ function run() {
         let data = await octokit.pulls.listFiles({
             owner: owner,
             repo: repo,
-            pull_number: 46,
+            pull_number: github.context.payload.pull_request.number,
             per_page: 50,
             page: page
         }).then(({ data }) => {
@@ -136,7 +136,14 @@ function run() {
                     pull_number: github.context.payload.pull_request.number
                 };
 
-                const updateTitle = title + ` #version:${version}`;
+                const versionRegex = /(?<=#version)(\d+\.?)+/;
+                let versionFound = versionRegex.exec(title);
+                let updateTitle = title;
+                if (versionFound.length > 0) {
+                    updateTitle.replace(`#version:${versionFound[0]}`, '');
+                }
+
+                updateTitle += ` #version:${version}`;
                 request.title = updateTitle;
                 request.body = '';
 
@@ -162,60 +169,6 @@ function run() {
         core.setFailed(err.toString());
     });
 
-
-    // Implementation : Get all pullrequest to calculate library version
-
-    (async () => {
-
-        const entireList = await getEntirePullList();
-        console.log('entireList lenght : ', entireList.length);
-        const mergedPullRequestTitles = entireList.filter(pull => pull.state === 'closed' && pull.merged_at !== null).map(pull => pull.title);
-        let version = '1.0.0';
-        console.log(' version : ', version);
-        mergedPullRequestTitles.reverse().forEach(pullTitle => {
-
-            console.log(' pullTitle : ', pullTitle);
-            if (pullTitle.includes('+semver: major') || pullTitle.includes('+semver: breaking')) {
-                version = incrementVersion(version, 'major');
-                console.log(` increment major version (${version})`);
-            }
-            else if (pullTitle.includes('+semver: feature') || pullTitle.includes('+semver: minor')) {
-                version = incrementVersion(version, 'minor');
-                console.log(` increment minor version (${version})`);
-            }
-            else if (pullTitle.includes('+semver: fix') || pullTitle.includes('+semver: patch')) {
-                version = incrementVersion(version, 'patch');
-                console.log(` increment patch version (${version})`);
-            }
-            else {
-                console.log(` no increment version (${version})`);
-            }
-        });
-
-        return version;
-    })().then(version => {
-        console.log(' version final : ', version);
-        // add version to pull request title
-        const request = {
-            owner: owner,
-            repo: repo,
-            pull_number: github.context.payload.pull_request.number
-        };
-
-        const updateTitle = title + ` #version:${version}`;
-        request.title = updateTitle;
-        request.body = '';
-
-        core.debug(`new title: ${request.title}`);
-
-        octokit.pulls.update(request).then(({ data }) => {
-            core.debug(`update pull request response: ${data}`);
-        }).catch(err => {
-            core.setFailed(err.toString());
-        });
-    }).catch(err => {
-        core.setFailed(err.toString());
-    });
 
 }
 
