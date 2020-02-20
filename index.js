@@ -3,29 +3,42 @@ const github = require('@actions/github');
 
 function run() {
 
-    isTitleShouldContainPackageVersionIncrementation = core.getInput('isTitleShouldContainPackageVersionIncrementation', { required: true });
     const title = github.context.payload.pull_request.title;
-    core.debug(`title: ${title}`);
-
-    const titleRegex = /(\+semver:\s?(breaking|major)|\+semver:\s?(feature|minor)|\+semver:\s?(fix|patch)|\+semver:\s?(none|skip))/;
-    const matches = titleRegex.test(title);
-    if (isTitleShouldContainPackageVersionIncrementation && !matches) {
-        core.setFailed('Pull request title does not match given regex, it should include either one of this option : [+semver: breaking|major, +semver: feature|minor, +semver: fix|patch, +semver: none|skip] ');
-        return;
-    }
-    if (!isTitleShouldContainPackageVersionIncrementation && matches) {
-        core.setFailed('Pull request title should not include one of this : [+semver: breaking|major, +semver: feature|minor, +semver: fix|patch, +semver: none|skip] if the library was not updated');
-        return;
-    }
-
+    const libraryPath = core.getInput('libraryPath', { required: true });
     const myToken = core.getInput('githubToken');
     const octokit = new github.GitHub(myToken);
-
-
     const repo = github.context.repo.repo;
     const owner = github.context.repo.owner;
-    core.warning(`repo: ${repo}`);
-    core.warning(`owner: ${owner}`);
+
+    // Method : Get all file changes of pull request to determine library was updated
+    const getFilesChanges = async function (page = 1) {
+        let data = await octokit.pulls.listFiles({
+            owner: owner,
+            repo: repo,
+            pull_number: 46,
+            per_page: 50,
+            page: page
+        }).then(({ data }) => {
+            return data;
+        }).catch(err => {
+            core.setFailed(err.toString());
+        });
+        return data;
+    };
+
+    const getEntireFilesChangesList = async function (pageNo = 1) {
+        const results = await getFilesChanges(pageNo);
+        console.log("Retreiving data from API for page : " + pageNo);
+        console.log("results lenght" + results.length);
+        if (results.length === 50) {
+            return results.concat(await getEntireFilesChangesList(pageNo + 1));
+        } else {
+            return results;
+        }
+    };
+
+
+    // Method : Get all pullrequest to calculate library version
     const getDatas = async function (page = 1) {
         let data = await octokit.pulls.list({
             owner: owner,
@@ -52,6 +65,105 @@ function run() {
             return results;
         }
     };
+
+
+    // Implementation : Get all file changes of pull request to determine library was updated
+    (async () => {
+
+        const entireFilesChangesList = await getEntireFilesChangesList();
+        console.log('entireFilesChangesList lenght : ', entireFilesChangesList.length);
+        console.log('entireFilesChangesList : ', entireFilesChangesList);
+
+        let isLibraryUpdated = false;
+        entireFilesChangesList.map(fileChange => fileChange.filename).forEach(filename => {
+            console.log('test filename : ', filename, ' contain ', libraryPath);
+            if (filename.startsWith(`${libraryPath}/`)) {
+                isLibraryUpdated = true;
+                console.log('library updated');
+            }
+
+        });
+
+        return isLibraryUpdated;
+    })().then(isLibraryUpdated => {
+        console.log(' library updated : ', isLibraryUpdated);
+        const titleRegex = /(\+semver:\s?(breaking|major)|\+semver:\s?(feature|minor)|\+semver:\s?(fix|patch)|\+semver:\s?(none|skip))/;
+        const matches = titleRegex.test(title);
+
+        if (isLibraryUpdated) {
+
+            if (!matches) {
+                core.setFailed('Pull request title does not match given regex, it should include either one of this option : [+semver: breaking|major, +semver: feature|minor, +semver: fix|patch, +semver: none|skip] ');
+                return;
+            }
+
+            // Implementation : Get all pullrequest to calculate library version
+
+            (async () => {
+
+                const entireList = await getEntirePullList();
+                console.log('entireList lenght : ', entireList.length);
+                const mergedPullRequestTitles = entireList.filter(pull => pull.state === 'closed' && pull.merged_at !== null).map(pull => pull.title);
+                let version = '1.0.0';
+                console.log(' version : ', version);
+                mergedPullRequestTitles.reverse().forEach(pullTitle => {
+
+                    console.log(' pullTitle : ', pullTitle);
+                    if (pullTitle.includes('+semver: major') || pullTitle.includes('+semver: breaking')) {
+                        version = incrementVersion(version, 'major');
+                        console.log(` increment major version (${version})`);
+                    }
+                    else if (pullTitle.includes('+semver: feature') || pullTitle.includes('+semver: minor')) {
+                        version = incrementVersion(version, 'minor');
+                        console.log(` increment minor version (${version})`);
+                    }
+                    else if (pullTitle.includes('+semver: fix') || pullTitle.includes('+semver: patch')) {
+                        version = incrementVersion(version, 'patch');
+                        console.log(` increment patch version (${version})`);
+                    }
+                    else {
+                        console.log(` no increment version (${version})`);
+                    }
+                });
+
+                return version;
+            })().then(version => {
+                console.log(' version final : ', version);
+                // add version to pull request title
+                const request = {
+                    owner: owner,
+                    repo: repo,
+                    pull_number: github.context.payload.pull_request.number
+                };
+
+                const updateTitle = title + ` #version:${version}`;
+                request.title = updateTitle;
+                request.body = '';
+
+                core.debug(`new title: ${request.title}`);
+
+                octokit.pulls.update(request).then(({ data }) => {
+                    core.debug(`update pull request response: ${data}`);
+                }).catch(err => {
+                    core.setFailed(err.toString());
+                });
+            }).catch(err => {
+                core.setFailed(err.toString());
+            });
+        }
+        else {
+            if (matches) {
+                core.setFailed('Pull request title should not include one of this : [+semver: breaking|major, +semver: feature|minor, +semver: fix|patch, +semver: none|skip] if the library was not updated');
+                return;
+            }
+        }
+
+    }).catch(err => {
+        core.setFailed(err.toString());
+    });
+
+
+    // Implementation : Get all pullrequest to calculate library version
 
     (async () => {
 
@@ -92,6 +204,7 @@ function run() {
 
         const updateTitle = title + ` #version:${version}`;
         request.title = updateTitle;
+        request.body = '';
 
         core.debug(`new title: ${request.title}`);
 

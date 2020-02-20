@@ -1,21 +1,21 @@
-# Hello world javascript action
+# Manage package versioning on pullrequest title
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+This action update pullrequest title including library version calculated based on old pullrequest title if library updated
 
 ## Inputs
 
-### `who-to-greet`
+### `githubToken`
 
-**Required** The name of the person to greet. Default `"World"`.
+**Required** The github token passed with secret.
+### `libraryPath`
 
-## Outputs
+**Required** the library path to determine if library was update on the pull request.
 
-### `time`
-
-The time we greeted you.
 
 ## Example usage
-
-uses: actions/hello-world-javascript-action@v1
+```
+uses: M2Key/action-manage-packageversioning-on-pullrequest@v1
 with:
-  who-to-greet: 'Mona the Octocat'
+  libraryPath: 'PrizeSystemLibrary'
+  githubToken: ${{ secrets.GITHUB_TOKEN }}
+```
