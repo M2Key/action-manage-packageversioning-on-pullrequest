@@ -122,13 +122,16 @@ function run() {
                     pull_number: github.context.payload.pull_request.number
                 };
 
-                const versionRegex = /(?<=#version)(\d+\.?)+/;
+                // Clean title if it already contain #version:major.minor.patch text (no matter wich version)
+                const versionRegex = /(?<=#version:)(\d+\.?)+/;
                 let versionFound = versionRegex.exec(title);
                 let updateTitle = title;
-                if (versionFound) {
-                    updateTitle.replace(`#version:${versionFound[0]}`, '');
+                while (versionFound) {
+                    updateTitle = updateTitle.replace(`#version:${versionFound[0]}`, '');
+                    versionFound = versionRegex.exec(updateTitle);
                 }
 
+                // Add new version to pull request title as #version:major.minor.patch
                 updateTitle += ` #version:${version}`;
                 request.title = updateTitle;
                 request.body = '';
