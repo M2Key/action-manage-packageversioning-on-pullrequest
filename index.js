@@ -109,23 +109,9 @@ function run() {
                 mergedPullRequestTitles.reverse().forEach(pullTitle => {
 
                     console.log(' pullTitle : ', pullTitle);
-                    if (pullTitle.includes('+semver: major') || pullTitle.includes('+semver: breaking')) {
-                        version = incrementVersion(version, 'major');
-                        console.log(` increment major version (${version})`);
-                    }
-                    else if (pullTitle.includes('+semver: feature') || pullTitle.includes('+semver: minor')) {
-                        version = incrementVersion(version, 'minor');
-                        console.log(` increment minor version (${version})`);
-                    }
-                    else if (pullTitle.includes('+semver: fix') || pullTitle.includes('+semver: patch')) {
-                        version = incrementVersion(version, 'patch');
-                        console.log(` increment patch version (${version})`);
-                    }
-                    else {
-                        console.log(` no increment version (${version})`);
-                    }
+                    determineVersionIncrementation(pullTitle, version);
                 });
-
+                determineVersionIncrementation(title, version);
                 return version;
             })().then(version => {
                 console.log(' version final : ', version);
@@ -139,7 +125,7 @@ function run() {
                 const versionRegex = /(?<=#version)(\d+\.?)+/;
                 let versionFound = versionRegex.exec(title);
                 let updateTitle = title;
-                if (versionFound.length > 0) {
+                if (versionFound) {
                     updateTitle.replace(`#version:${versionFound[0]}`, '');
                 }
 
@@ -172,6 +158,25 @@ function run() {
 
 }
 
+function determineVersionIncrementation(title, version) {
+    if (title.includes('+semver: major') || title.includes('+semver: breaking')) {
+        version = incrementVersion(version, 'major');
+        console.log(` increment major version (${version})`);
+    }
+    else if (title.includes('+semver: feature') || title.includes('+semver: minor')) {
+        version = incrementVersion(version, 'minor');
+        console.log(` increment minor version (${version})`);
+    }
+    else if (title.includes('+semver: fix') || title.includes('+semver: patch')) {
+        version = incrementVersion(version, 'patch');
+        console.log(` increment patch version (${version})`);
+    }
+    else {
+        console.log(` no increment version (${version})`);
+    }
+
+    return version;
+}
 function incrementVersion(version, incrementation) {
     let versionSplit = version.split('.').map(Number);
     switch (incrementation) {
