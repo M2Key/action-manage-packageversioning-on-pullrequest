@@ -105,13 +105,13 @@ function run() {
                 console.log('entireList lenght : ', entireList.length);
                 const mergedPullRequestTitles = entireList.filter(pull => pull.state === 'closed' && pull.merged_at !== null).map(pull => pull.title);
                 let version = '1.0.0';
-                console.log(' version : ', version);
+                console.log(' base version : ', version);
                 mergedPullRequestTitles.reverse().forEach(pullTitle => {
 
                     console.log(' pullTitle : ', pullTitle);
-                    determineVersionIncrementation(pullTitle, version);
+                    version = determineVersionIncrementation(pullTitle, version);
                 });
-                determineVersionIncrementation(title, version);
+                version = determineVersionIncrementation(title, version);
                 return version;
             })().then(version => {
                 console.log(' version final : ', version);
